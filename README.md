@@ -1,6 +1,9 @@
 OSIN
 ====
 
+[![GoDoc](https://godoc.org/github.com/RangelReale/osin?status.svg)](https://godoc.org/github.com/RangelReale/osin)
+
+
 Golang OAuth2 server library
 ----------------------------
 
@@ -10,10 +13,6 @@ http://tools.ietf.org/html/rfc6749 and http://tools.ietf.org/html/draft-ietf-oau
 Using it, you can build your own OAuth2 authentication service.
 
 The library implements the majority of the specification, like authorization and token endpoints, and authorization code, implicit, resource owner and client credentials grant types.
-
-### Dependencies
-
-* go-uuid (http://code.google.com/p/go-uuid)
 
 ### Example Server
 
@@ -27,7 +26,7 @@ server := osin.NewServer(osin.NewServerConfig(), &TestStorage{})
 http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 	resp := server.NewResponse()
 	defer resp.Close()
-	
+
 	if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
 
 		// HANDLE LOGIN PAGE HERE
@@ -42,7 +41,7 @@ http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
 	resp := server.NewResponse()
 	defer resp.Close()
-	
+
 	if ar := server.HandleAccessRequest(resp, r); ar != nil {
 		ar.Authorized = true
 		server.FinishAccessRequest(resp, r, ar)
@@ -58,8 +57,18 @@ http.ListenAndServe(":14000", nil)
 Open in your web browser:
 
 ````
-http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_url=http%3A%2F%2Flocalhost%3A14000%2Fappauth%2Fcode
+http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_uri=http%3A%2F%2Flocalhost%3A14000%2Fappauth%2Fcode
 ````
+
+### Storage backends
+
+There is a mock available at [example/teststorage.go](/example/teststorage.go) which you can use as a guide for writing your own.  
+
+You might want to check out other implementations for common database management systems as well:
+
+* [PostgreSQL](https://github.com/ory-am/osin-storage)
+* [MongoDB](https://github.com/martint17r/osin-mongo-storage)
+* [RethinkDB](https://github.com/ahmet/osin-rethinkdb)
 
 ### License
 
@@ -79,7 +88,7 @@ rangelreale@gmail.com
 	  that need to clone / close in each connection (mgo)
 	- Client was changed to be an interface instead of an struct. Because of that,
 	  the Storage interface also had to change, as interface is already a pointer.
-	
+
 	- HOW TO FIX YOUR CODE:
 		+ In your Storage, add a Clone function returning itself, and a do nothing Close.
 		+ In your Storage, replace all *osin.Client with osin.Client (remove the pointer reference)
@@ -88,6 +97,6 @@ rangelreale@gmail.com
 		+ Change all accesses using osin.Client to use the methods instead of the fields directly.
 		+ You MUST defer Response.Close in all your http handlers, otherwise some
 		  Storages may not clean correctly.
-		
+
 				resp := server.NewResponse()
 				defer resp.Close()
